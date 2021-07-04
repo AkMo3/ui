@@ -1,8 +1,7 @@
 import Component from '@ember/component';
-import { get, set, observer } from '@ember/object';
+import { get } from '@ember/object';
 import moment from 'moment';
 import Table from 'ember-light-table';
-import isEqual from 'lodash.isequal';
 
 export default Component.extend({
   isLoading: false,
@@ -192,12 +191,7 @@ export default Component.extend({
       };
     });
 
-    const collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' });
-
     switch (this.sortingValuePath) {
-      case 'job':
-        rows.sort((a, b) => collator.compare(a.job.jobName, b.job.jobName));
-        break;
       case 'startTime':
         rows.sort((a, b) => {
           const aStartTime = get(a, 'history.lastObject.startTime');
@@ -216,19 +210,6 @@ export default Component.extend({
 
     return rows;
   },
-  jobsObserver: observer('jobsDetails.[]', function jobsObserverFunc({ jobsDetails }) {
-    const rows = this.getRows(jobsDetails);
-    const lastRows = get(this, 'lastRows') || [];
-    const isEqualRes = isEqual(
-      rows.map(r => r.job).sort((a, b) => (a.jobName || '').localeCompare(b.jobName)),
-      lastRows.map(r => r.job).sort((a, b) => (a.jobName || '').localeCompare(b.jobName))
-    );
-
-    if (!isEqualRes) {
-      set(this, 'lastRows', rows);
-      this.table.setRows(rows);
-    }
-  }),
 
   actions: {
     async onScrolledToBottom() {
